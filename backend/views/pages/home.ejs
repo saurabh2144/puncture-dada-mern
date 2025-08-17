@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+  </head>
+
+  <body class="bg-gray-900 text-white min-h-screen flex flex-col">
+    
+    <div id="tsparticles" class="absolute inset-0 -z-10"></div>
+
+
+    <%- include('../partials/navbar') %>
+
+    <main class="flex-grow pt-20">
+      <div class="flex flex-col md:flex-row h-full p-10">
+   
+        <div class=" w-full md:w-1/2 pr-8 flex items-center justify-center mb-10 md:mb-0">
+          <div>
+            <h2 class=" bg-gray-800 text-4xl font-bold mb-4">Welcome to Puncture Dada <br><p class="text-xl"> We help you find the nearest mechanic instantly <br>Scroll down for more information</p></h2>
+
+          </div>
+        </div>
+
+        
+        <div class="w-full md:w-1/2 flex items-center justify-center">
+          <div id="map" class="w-[400px] h-[400px] rounded-lg shadow-lg border-2 border-white z-10"></div>
+        </div>
+      </div>
+    </main>
+
+    <%- include('../partials/slide') %>
+
+    <br>
+    <br>
+
+    <%- include('../partials/video') %>
+    
+    <%- include('../partials/translate') %>
+
+   
+
+       
+        <div class="md:w-1/2 flex flex-col items-center gap-4">
+          <img src="/images/1.png" alt="Language feature" class="rounded shadow-lg w-full max-w-md" />
+
+          
+          
+        </div>
+      </div>
+      
+    </section>
+
+    
+
+    <%- include('../partials/footer') %>
+
+
+    <script>
+     
+      tsParticles.load("tsparticles", {
+        background: { color: "#1f2937" },
+        fpsLimit: 60,
+        interactivity: {
+          events: {
+            onHover: { enable: true, mode: "repulse" },
+            onClick: { enable: true, mode: "push" },
+            resize: true,
+          },
+          modes: {
+            repulse: { distance: 100, duration: 0.4 },
+            push: { quantity: 4 },
+          },
+        },
+        particles: {
+          color: { value: "#ffffff" },
+          links: { enable: true, color: "#ffffff", distance: 150 },
+          move: { enable: true, speed: 2 },
+          number: { value: 80 },
+          size: { value: { min: 1, max: 5 } },
+        },
+      });
+
+      
+      const map = L.map("map").setView([20.5937, 78.9629], 5);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          map.setView([lat, lng], 15);
+          L.marker([lat, lng]).addTo(map).bindPopup("You are here").openPopup();
+        },
+        (err) => console.error("Geolocation error:", err)
+      );
+
+   
+      let slideIndex = 0;
+      function showSlides() {
+        const slides = document.getElementsByClassName("slide");
+        for (let i = 0; i < slides.length; i++) {
+          slides[i].style.display = "none";
+        }
+        slideIndex++;
+        if (slideIndex > slides.length) slideIndex = 1;
+        slides[slideIndex - 1].style.display = "block";
+        setTimeout(showSlides, 6000);
+      }
+      showSlides();
+    </script>
+  </body>
+</html>

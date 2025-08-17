@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+
+  </head>
+  <body class="bg-gray-900 text-white min-h-screen flex flex-col">
+    <div id="tsparticles" class="fixed inset-0 -z-10"></div>
+
+    <%- include('../partials/navbar1') %>
+
+    <main class="flex-grow pt-20">
+      <div class="flex justify-center items-center px-4 py-10">
+        <form action="/Uregister" method="POST" class="bg-gray-800 w-full max-w-md p-8 rounded-xl shadow-lg border border-gray-700 space-y-6">
+          <h2 class="text-3xl font-bold text-center mb-4">User Registration</h2>
+
+          <input name="name" type="text" placeholder="Full Name" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input name="email" type="email" placeholder="Email" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input name="password" type="password" placeholder="Password" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+          <button class="w-full bg-green-600 hover:bg-green-700 py-2 rounded font-semibold">Register</button>
+
+          <p class="text-center text-sm text-gray-400">
+            Already have an account?
+            <a href="/Ulogin" class="text-blue-400 hover:underline font-medium">Login here</a>
+          </p>
+        </form>
+      </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+     <script>
+      tsParticles.load("tsparticles", {
+        background: { color: "#1f2937" },
+        fpsLimit: 60,
+        interactivity: {
+          events: {
+            onHover: { enable: true, mode: "repulse" },
+            onClick: { enable: true, mode: "push" },
+            resize: true,
+          },
+          modes: {
+            repulse: { distance: 100, duration: 0.4 },
+            push: { quantity: 4 },
+          },
+        },
+        particles: {
+          color: { value: "#ffffff" },
+          links: { enable: true, color: "#ffffff", distance: 150 },
+          move: { enable: true, speed: 2 },
+          number: { value: 80 },
+          size: { value: { min: 1, max: 5 } },
+        },
+      });
+    </script>
+  
+  </body>
+</html>

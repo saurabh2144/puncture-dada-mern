@@ -1,0 +1,66 @@
+<nav class="fixed top-0 left-0 w-full bg-[#282e3c] text-white shadow-md z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-400" fill="none" viewBox="0 0 25 25" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M14.828 14.828a4 4 0 01-5.656-5.656M15 12a3 3 0 00-3-3m4.95 2.122a6.978 6.978 0 01-1.414 1.415m-4.243 4.242a6.978 6.978 0 001.414-1.414M12 6v.01M6.343 6.343a8 8 0 1011.314 11.314A8 8 0 006.343 6.343z" />
+        </svg>
+        <span class="text-2xl font-bold">Puncture Dada</span>
+      </div>
+
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="/" class="hover:text-blue-400 transition">Home</a>
+        <a href="" class="hover:text-blue-400 transition">About</a>
+        <a href="" class="hover:text-blue-400 transition">Services</a>
+        <a href="" class="hover:text-blue-400 transition">Contact</a>
+        <div class="ml-6 relative">
+          <% if (mechanic && mechanic.profilePic) { %>
+            <img
+              src="/profile/<%= mechanic.profilePic %>"
+              alt="Profile"
+              id="profilePic"
+              class="h-10 w-10 rounded-full border-2 border-blue-500 object-cover cursor-pointer"
+            />
+          <% } else { %>
+            <p class="text-sm text-gray-300 italic">Not logged in</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div id="profilePanel"
+  class="fixed top-0 right-0 h-full w-64 bg-gray-800 text-white shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+  <img 
+    class="w-40 h-40 rounded-full object-cover border-4 border-white shadow-lg mx-auto" 
+    src="/uploads/<%= mechanic.profilePic %>" 
+    alt="profile pic" 
+  />
+  <div class="p-4 border-b border-gray-600 flex justify-between items-center">
+    <h2 class="text-lg font-semibold">My Profile</h2>
+    <button id="closePanel" class="text-white text-xl">&times;</button>
+  </div>
+  <div class="p-4 space-y-4">
+    <p><strong>Name:</strong> <%= mechanic?.name %></p>
+    <p><strong>Phone:</strong> <%= mechanic?.phone %></p>
+    <p><strong>Total Earned:</strong> ₹12,500</p>
+    <hr class="border-gray-600">
+    <a href="/logout" class="block text-red-400 hover:text-red-500">Logout</a>
+  </div>
+</div>
+
+<script>
+  const profilePic = document.getElementById("profilePic");
+  const panel = document.getElementById("profilePanel");
+  const closeBtn = document.getElementById("closePanel");
+
+  profilePic?.addEventListener("click", () => {
+    panel.classList.remove("translate-x-full");
+  });
+
+  closeBtn?.addEventListener("click", () => {
+    panel.classList.add("translate-x-full");
+  });
+</script>

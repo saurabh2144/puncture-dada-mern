@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
+    />
+
+ 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+
+    <style>
+      #map {
+        height: 500px;
+        width: 100%;
+        z-index: 0;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <div id="tsparticles" class="absolute inset-0 -z-10"></div>
+
+    <%- include('../partials/navbar1') %>
+
+    <main class="flex-grow pt-20">
+      <div class="flex flex-col md:flex-row h-full p-10">
+
+        <div class="w-full md:w-1/2 pr-8 flex flex-col justify-center items-start gap-4 mb-10 md:mb-0">
+          <h2 class="text-4xl font-bold">Your mechanic <%= mechanicname %> will reach you shortly</h2>
+
+          <div id="mechanicContact">
+            <button id="mechanicContact" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mt-4">
+              Get Mechanic Number
+            </button>
+          </div>
+          <div class="text-center mt-10">
+  <button id="openChatBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">
+    Open Chat Box
+  </button>
+</div>
+
+
+
+          <div id="etaDisplay" class="mt-4 text-xl text-green-400 hidden"></div>
+
+     
+          <input type="hidden" id="mechanicLat" value="<%= mechanicLat %>" />
+          <input type="hidden" id="mechanicLng" value="<%= mechanicLng %>" />
+          <input type="hidden" id="mechanicname" value="<%= mechanicname %>" />
+          <input type="hidden" id="mechanicContact" value="<%= mechanicContact %>" />
+        </div>
+
+    
+        <div class="w-full md:w-1/2 flex items-center justify-center">
+          <div id="map" class="w-[400px] h-[400px] rounded-lg shadow-lg border-2 border-white z-10"></div>
+        </div>
+      </div>
+    </main>
+      <%- include('../partials/userchat') %>
+      <br>
+
+       <%- include('../partials/translate') %>
+
+      <br><br>
+      <%- include('../partials/slide') %>
+
+    <br>
+    <br>
+
+    <%- include('../partials/video') %>
+    
+   
+
+ 
+    <%- include('../partials/footer') %>
+
+    <script src="/js/particle.js"></script>
+
+    
+    <script>
+      const map = L.map("map");
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+      }).addTo(map);
+
+      const mechanicLat = parseFloat(document.getElementById("mechanicLat").value);
+      const mechanicLng = parseFloat(document.getElementById("mechanicLng").value);
+      const mechanicContact = document.getElementById("mechanicContact").value;
+
+      navigator.geolocation.getCurrentPosition((position) => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        map.fitBounds([
+          [userLat, userLng],
+          [mechanicLat, mechanicLng],
+        ]);
+
+        L.marker([userLat, userLng])
+          .addTo(map)
+          .bindPopup("<b>You are here</b>")
+          .openPopup();
+
+        L.marker([mechanicLat, mechanicLng])
+          .addTo(map)
+          .bindPopup("<b>Mechanic's Location</b>");
+
+        const control = L.Routing.control({
+          waypoints: [
+            L.latLng(mechanicLat, mechanicLng),
+            L.latLng(userLat, userLng),
+          ],
+          show: false,
+          routeWhileDragging: false,
+          draggableWaypoints: false,
+          addWaypoints: false,
+          createMarker: () => null,
+        })
+          .on("routesfound", function (e) {
+            const route = e.routes[0];
+            const timeInSeconds = route.summary.totalTime;
+            const minutes = Math.round(timeInSeconds / 60);
+            document.getElementById("etaDisplay").textContent = `Estimated arrival time: ${minutes} minutes`;
+            document.getElementById("etaDisplay").classList.remove("hidden");
+          })
+          .addTo(map);
+      });
+
+      document.getElementById("getNumberBtn").addEventListener("click", () => {
+        const mechanicContactDiv = document.getElementById("mechanicContact");
+        mechanicContactDiv.innerHTML = `<p class="text-xl text-yellow-400">Mechanic's Number: ${mechanicContact}</p>`;
+        console.log(`mechanic phone number in ejs ${mechanicContact}`)
+      });
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  socket.emit('register', 'user');
+
+  const chatSection = document.getElementById('chatSection');
+  const openChatBtn = document.getElementById('openChatBtn');
+
+  openChatBtn.addEventListener('click', () => {
+    chatSection.classList.remove('hidden');
+    chatSection.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  document.getElementById('send-msg').addEventListener('click', () => {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    socket.emit('user-message', msg);
+    input.value = '';
+
+    const chatbox = document.getElementById('chat-box');
+    chatbox.innerHTML += `<div class="text-right"><span class="inline-block bg-blue-500 text-white px-3 py-1 rounded-lg">${msg}</span></div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+  });
+
+  socket.on('chat-message', ({ from, translated }) => {
+    const chatbox = document.getElementById('chat-box');
+    chatbox.innerHTML += `<div class="text-left"><span class="inline-block bg-gray-300 text-black px-3 py-1 rounded-lg">${from}: ${translated}</span></div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+  });
+</script>
+
+  </body>
+</html>

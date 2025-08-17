@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Loader Example</title>
+       <style>
+      nav {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 50;
+      }
+
+      #wifi-loader {
+        --background: #ffb347;
+        --front-color: #ff6f00;
+        --back-color: #ffe0b2;
+        --text-color: #ffffff;
+        width: 64px;
+        height: 64px;
+        border-radius: 50px;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #wifi-loader svg {
+        position: absolute;
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .circle-outer {
+        animation: rotate360 2s linear infinite;
+      }
+
+      .circle-middle {
+        animation: rotate360 1.5s linear reverse infinite;
+      }
+
+      .circle-inner {
+        animation: rotate360 1s linear infinite;
+      }
+
+      .circle-outer .back,
+      .circle-middle .back,
+      .circle-inner .back {
+        fill: none;
+        stroke: var(--back-color);
+        stroke-width: 2;
+      }
+
+      .circle-outer .front,
+      .circle-middle .front,
+      .circle-inner .front {
+        fill: none;
+        stroke: var(--front-color);
+        stroke-width: 2;
+        stroke-dasharray: 80;
+        stroke-dashoffset: 60;
+        stroke-linecap: round;
+        animation: dash 1s ease-in-out infinite;
+      }
+
+      .text {
+        position: absolute;
+        bottom: -40px;
+        font-size: 14px;
+        color: var(--text-color);
+        font-weight: 500;
+      }
+
+      @keyframes rotate360 {
+        0% {
+          transform: rotate(0);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes dash {
+        0% {
+          stroke-dashoffset: 60;
+        }
+
+        50% {
+          stroke-dashoffset: 20;
+        }
+
+        100% {
+          stroke-dashoffset: 60;
+        }
+      }
+    </style>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/leaflet/dist/leaflet.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+  </head>
+
+  <body class="bg-gray-900 text-white min-h-screen flex flex-col relative">
+   
+    <div id="tsparticles" class="absolute inset-0 -z-10"></div>
+
+
+    <%- include('../partials/navbar1') %>
+
+  
+    <div
+      id="fullLoader"
+      class="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm bg-black bg-opacity-50 hidden"
+    >
+      <div id="wifi-loader" class="scale-[1.8]">
+        <svg class="circle-outer" viewBox="0 0 86 86">
+          <circle class="back" cx="43" cy="43" r="40"></circle>
+          <circle class="front" cx="43" cy="43" r="40"></circle>
+        </svg>
+        <svg class="circle-middle" viewBox="0 0 60 60">
+          <circle class="back" cx="30" cy="30" r="27"></circle>
+          <circle class="front" cx="30" cy="30" r="27"></circle>
+        </svg>
+        <svg class="circle-inner" viewBox="0 0 34 34">
+          <circle class="back" cx="17" cy="17" r="14"></circle>
+          <circle class="front" cx="17" cy="17" r="14"></circle>
+        </svg>
+        <div class="text" data-text="Searching">Searching</div>
+      </div>
+    </div>
+
+
+    <main class="flex-grow pt-20 px-4">
+      <div class="flex flex-col lg:flex-row h-[75vh] w-full gap-6">
+     
+        <div
+          class="w-full lg:w-1/2 bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-6 flex flex-col justify-center items-center space-y-6"
+        >
+          <h2 class="text-2xl font-bold text-center">Book a Mechanic</h2>
+          <button
+            class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded text-lg font-semibold shadow-lg"
+            id="requestBtn"
+          >
+            Book Mechanic
+          </button>
+
+        </div>
+
+     
+        <div class="w-full lg:w-1/2 h-full">
+          <div
+            id="map"
+            class="w-full h-full rounded-xl shadow-lg border border-gray-700 z-10"
+          ></div>
+        </div>
+      </div>
+    </main>
+
+
+   
+
+   
+<br>
+    
+
+
+    <%- include('../partials/video') %>
+    <br>
+    
+   
+
+
+    <footer><%- include('../partials/footer') %></footer>
+
+ 
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+    
+      const map = L.map("map").setView([26.8467, 80.9462], 13);
+
+ 
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+      }).addTo(map);
+
+         let userLatitude;
+let userLongitude = null;
+
+
+      navigator.geolocation.getCurrentPosition((position) => {
+             userLatitude =position.coords.latitude;
+             userLongitude=position.coords.longitude;
+       
+        
+        map.setView([userLatitude, userLongitude], 14);
+
+      
+        L.marker([userLatitude, userLongitude])
+          .addTo(map)
+          .bindPopup("<b>You are here</b>");
+      });
+
+
+      fetch("/getmechanic")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data.length > 0) {
+            data.data.forEach((m) => {
+              console.log("Adding marker:", m.latitude, m.longitude);
+
+           
+              if (m.latitude && m.longitude) {
+                L.marker([m.latitude, m.longitude])
+                  .addTo(map)
+                  .bindPopup(`<b>${m.name}</b>`);
+              }
+            });
+          } else {
+            console.log("No mechanics found.");
+          }
+        })
+        .catch((err) => console.error("Error fetching mechanics:", err));
+    
+      const socket = io();
+      socket.emit("register", "user");
+
+      document.getElementById("requestBtn").onclick = () => {
+      
+        document.getElementById("fullLoader").classList.remove("hidden");
+        socket.emit("user-request",{latitude:userLatitude ,longitude:userLongitude});
+      };
+
+
+      socket.on("notify-mechanic", (data) => {
+  console.log(data.message);
+  console.log(data.userdata.latitude);
+});
+
+      socket.on("notify-user", (msg) => {
+        console.log(`msg after accept is ${msg}`);
+        if (msg.message === "Accepted") {
+          
+          document.getElementById("fullLoader").classList.add("hidden");
+          window.location.href = "/booked";
+        }
+
+     
+      });
+    </script>
+
+
+    <script>
+      tsParticles.load("tsparticles", {
+        background: { color: "#1f2937" },
+        fpsLimit: 60,
+        interactivity: {
+          events: {
+            onHover: { enable: true, mode: "repulse" },
+            onClick: { enable: true, mode: "push" },
+            resize: true,
+          },
+          modes: {
+            repulse: { distance: 100, duration: 0.4 },
+            push: { quantity: 4 },
+          },
+        },
+        particles: {
+          color: { value: "#ffffff" },
+          links: { enable: true, color: "#ffffff", distance: 150 },
+          move: { enable: true, speed: 2 },
+          number: { value: 80 },
+          size: { value: { min: 1, max: 5 } },
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      function confirmDelete(name) {
+        return confirm(`Are you sure you want to delete mechanic: ${name}?`);
+      }
+    </script>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
+    <h1 class="text-4xl font-bold mb-8 text-center">Admin Dashboard</h1>
+
+    <div class="flex flex-col md:flex-row gap-4 mb-6 justify-center items-center">
+      <form action="/admin/show-all-mechanics" method="get">
+        <button
+          id="myBtn"
+          class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 transition"
+        >
+          Show All Mechanics
+        </button>
+      </form>
+
+      <form action="/admin/search-mechanic" method="post" class="flex gap-2 items-center">
+        <input
+          name="name"
+          type="text"
+          placeholder="Search by name"
+          class="border px-4 py-2 rounded w-64"
+          required
+        />
+        <button
+          class="bg-green-600 text-white px-6 py-2 rounded shadow hover:bg-green-700 transition"
+        >
+          Search
+        </button>
+      </form>
+    </div>
+
+    <% if (mechanics) { %>
+    <div id="targetElement" class="w-full max-w-screen-xl">
+      <h2 class="text-2xl font-semibold mb-4 text-center">All Mechanics</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% mechanics.forEach(m => { %>
+        <div class="bg-white p-4 rounded shadow flex flex-col items-center text-center">
+          <h3 class="text-lg font-bold"><%= m.name %></h3>
+          <p>Phone: <%= m.phone %></p>
+          <p>Latitude: <%= m.latitude %></p>
+          <p>Longitude: <%= m.longitude %></p>
+
+          <div class="mt-4 space-y-4">
+            <div>
+              <p class="font-semibold">Profile:</p>
+              <a href="/uploads/<%= m.profilePic %>" target="_blank">
+                <img
+                  src="/uploads/<%= m.profilePic %>"
+                  class="w-32 h-32 object-cover rounded-full hover:scale-105 transition"
+                />
+              </a>
+            </div>
+
+            <div>
+              <p class="font-semibold">Aadhar:</p>
+              <a href="/uploads/<%= m.aadharPic %>" target="_blank">
+                <img
+                  src="/uploads/<%= m.aadharPic %>"
+                  class="w-32 h-32 object-cover hover:scale-105 transition"
+                />
+              </a>
+            </div>
+
+            <form
+              action="/admin/delete-mechanic/<%= m._id %>"
+              method="POST"
+              onsubmit="return confirmDelete('<%= m.name %>')"
+            >
+              <button
+                class="mt-2 bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 transition"
+              >
+                Delete
+              </button>
+            </form>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (mechanic) { %>
+    <div class="w-full max-w-3xl mt-10">
+      <h2 class="text-2xl font-semibold mb-4 text-center">Mechanic Found</h2>
+      <div class="bg-white p-6 rounded shadow flex flex-col items-center text-center">
+        <h3 class="text-lg font-bold"><%= mechanic.name %></h3>
+        <p>Phone: <%= mechanic.phone %></p>
+        <p>Latitude: <%= mechanic.latitude %></p>
+        <p>Longitude: <%= mechanic.longitude %></p>
+
+        <div class="mt-4 flex gap-6 flex-wrap justify-center">
+          <div>
+            <p class="font-semibold">Profile Photo:</p>
+            <a href="/uploads/<%= mechanic.profilePic %>" target="_blank">
+              <img
+                src="/uploads/<%= mechanic.profilePic %>"
+                class="w-40 h-40 rounded-full object-cover hover:scale-105 transition"
+              />
+            </a>
+          </div>
+
+          <div>
+            <p class="font-semibold">Aadhar Photo:</p>
+            <a href="/uploads/<%= mechanic.aadharPic %>" target="_blank">
+              <img
+                src="/uploads/<%= mechanic.aadharPic %>"
+                class="w-40 h-40 object-cover hover:scale-105 transition"
+              />
+            </a>
+          </div>
+        </div>
+
+        <form
+          action="/admin/delete-mechanic/<%= mechanic._id %>"
+          method="POST"
+          onsubmit="return confirmDelete('<%= mechanic.name %>')"
+        >
+          <button
+            class="mt-6 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+          >
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+    <% } %>
+
+    <script>
+      document.getElementById("myBtn").addEventListener("click", function () {
+        document.getElementById("targetElement").classList.remove("translate-x-full");
+      });
+    </script>
+  </body>
+</html>

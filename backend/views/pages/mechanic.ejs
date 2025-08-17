@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+    <style>
+      #map {
+        height: 500px;
+        width: 100%;
+        z-index: 0;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-900 text-white min-h-screen flex flex-col">
+    
+    <div id="tsparticles" class="absolute inset-0 -z-10"></div>
+
+    <%- include('../partials/navbarP', { mechanic }) %>
+
+  
+    <main class="flex-grow pt-20">
+      <div class="flex flex-col md:flex-row h-full p-10">
+    
+        <div
+          class="w-full md:w-1/2 pr-8 flex items-center justify-center mb-10 md:mb-0"
+        >
+          <div>
+            <h2 class="text-4xl font-bold mb-4">
+              Welcome, <%= mechanic.name %>
+         </h2>
+
+         
+<button
+  id="openChatBtn"
+  class="bg-purple-600 hidden :bg-purple-700 text-white px-4 py-2 rounded mt-6"
+>
+  Open Chat Box
+</button>
+
+            <p class="text-lg text-gray-300">
+              
+              We help you find the nearest mechanic instantly. Enable your
+              location to get started.
+            </p>
+            <br />
+
+           
+          </div>
+        </div>
+
+
+        <div class="w-full md:w-1/2 flex items-center justify-center">
+          <div
+            id="map"
+            class="w-[400px] h-[400px] rounded-lg shadow-lg border-2 border-white z-10"
+          ></div>
+        </div>
+      </div>
+    </main>
+
+
+    <%- include('../partials/mechanic-chat') %>
+
+
+    <div
+      id="popup"
+      style="display: none"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white text-black p-6 rounded-xl shadow-lg w-80 text-center"
+      >
+        <p id="notifyMsg" class="text-lg font-semibold mb-4">
+          User needs help!
+        </p>
+        <div class="flex justify-between">
+          <button
+            id="acceptBtn"
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Accept
+          </button>
+          <button
+            id="rejectBtn"
+            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Reject
+          </button>
+        </div>
+        <input
+          type="hidden"
+          id="mechanicLat"
+          value="<%= mechanic.latitude %>"
+        />
+        <input
+          type="hidden"
+          id="mechanicLng"
+          value="<%= mechanic.longitude %>"
+        />
+        <input type="hidden" id="mechanicname" value="<%= mechanic.name %>" />
+        <input
+          type="hidden"
+          id="mechanicContact"
+          value="<%= mechanic.phone %>"
+        />
+      </div>
+    </div>
+
+
+    <%- include('../partials/footer') %>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+   
+    <script src="/js/particle.js"></script>
+ 
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      const map = L.map("map").setView([26.8467, 80.9462], 13);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+      }).addTo(map);
+
+      const mechanicLat = parseFloat(
+        document.getElementById("mechanicLat").value
+      );
+      const mechanicLng = parseFloat(
+        document.getElementById("mechanicLng").value
+      );
+      const mechanicname = document.getElementById("mechanicname").value;
+      const mechanicContact = document.getElementById("mechanicContact").value;
+      let userLat = null;
+      let userLng = null;
+      let receivedUserData = null;
+
+      console.log(userLat + "and " + userLng);
+
+      map.setView([mechanicLat, mechanicLng], 14);
+
+      L.marker([mechanicLat, mechanicLng])
+        .addTo(map)
+        .bindPopup("<b>You are here</b>");
+
+      const socket = io();
+
+      socket.emit("register", "mechanic");
+
+
+      socket.on("notify-mechanic", (data) => {
+        document.getElementById("notifyMsg").innerText = data.message;
+        receivedUserData = data.userdata;
+        document.getElementById("popup").style.display = "block";
+      });
+
+      document.getElementById("acceptBtn").onclick = () => {
+        if (receivedUserData) {
+          userLat = receivedUserData.latitude;
+          userLng = receivedUserData.longitude;
+          console.log(userLat + " after setting field and " + userLng);
+           document.getElementById('openChatBtn').classList.remove('hidden');
+        }
+
+
+        if (userLat && userLng) {
+          L.marker([userLat, userLng])
+            .addTo(map)
+            .bindPopup("<b>User's Location</b>")
+            .openPopup();
+        }
+
+        L.marker([mechanicLat, mechanicLng])
+          .addTo(map)
+          .bindPopup("<b>You are here</b>");
+
+
+        if (userLat && userLng && mechanicLat && mechanicLng) {
+          L.polyline(
+            [
+              [mechanicLat, mechanicLng],
+              [userLat, userLng],
+            ],
+            {
+              color: "red",
+              weight: 4,
+            }
+          ).addTo(map);
+        }
+
+        socket.emit("mechanic-response", {
+          message: "Accepted",
+          location: {
+            mechanicLat,
+            mechanicLng,
+            mechanicname,
+            mechanicContact,
+          },
+        });
+        document.getElementById("popup").style.display = "none";
+      };
+
+      document.getElementById("rejectBtn").onclick = () => {
+        receivedUserData = null;
+        socket.emit("mechanic-response", "Rejected");
+        document.getElementById("popup").style.display = "none";
+      };
+      
+         const chatSection = document.getElementById('chatSection');
+const openChatBtn = document.getElementById('openChatBtn');
+
+openChatBtn.addEventListener('click', () => {
+  chatSection.classList.remove('hidden'); 
+  chatSection.scrollIntoView({ behavior: 'smooth' });
+});
+
+
+
+
+  document.getElementById('send-msg').addEventListener('click', () => {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    socket.emit('mechanic-message', msg);
+    input.value = '';
+
+  
+
+    const chatbox = document.getElementById('chat-box');
+    chatbox.innerHTML += `<div class="text-right"><span class="inline-block bg-blue-500 text-white px-3 py-1 rounded-lg">${msg}</span></div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+  });
+       
+       
+
+
+  socket.on('chat-message', ({ from, translated }) => {
+    const chatbox = document.getElementById('chat-box');
+    chatbox.innerHTML += `<div class="text-left"><span class="bg-gray-600 px-3 py-1 rounded inline-block">${from}: ${translated}</span></div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+  });
+
+
+    </script>
+  </body>
+</html>
